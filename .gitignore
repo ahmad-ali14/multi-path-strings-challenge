@@ -1,0 +1,6 @@
+node_modules/
+dist/
+public/js/app.js
+.env
+public/js/
+package-lock.json
