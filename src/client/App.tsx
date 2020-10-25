@@ -28,7 +28,7 @@ class App extends React.Component<IAppProps, IAppState> {
         text: "",
         up: null,
         left: null,
-        down: null,
+        down: 0,
         right: null,
       },
       currentLeft: {
@@ -36,11 +36,11 @@ class App extends React.Component<IAppProps, IAppState> {
         up: null,
         left: null,
         down: null,
-        right: null,
+        right: 0,
       },
       currentDown: {
         text: "",
-        up: null,
+        up: 0,
         left: null,
         down: null,
         right: null,
@@ -48,7 +48,7 @@ class App extends React.Component<IAppProps, IAppState> {
       currentRight: {
         text: "",
         up: null,
-        left: null,
+        left: 0,
         down: null,
         right: null,
       },
@@ -57,38 +57,13 @@ class App extends React.Component<IAppProps, IAppState> {
   }
 
   makeFirstCenter = () => {
-    this.setState(
-      {
-        currentUp: { ...this.state.currentUp, down: this.state.chosen },
-        currentLeft: { ...this.state.currentLeft, right: this.state.chosen },
-        currentDown: { ...this.state.currentDown, up: this.state.chosen },
-        currentRight: { ...this.state.currentRight, left: this.state.chosen },
-      },
+    store.addStoryObject(this.state.currentCenter);
+    store.addStoryObject(this.state.currentUp);
+    store.addStoryObject(this.state.currentLeft);
+    store.addStoryObject(this.state.currentDown);
+    store.addStoryObject(this.state.currentRight);
 
-      () => {
-        console.log("s after change >>>>>>>>", this.state);
-        store.addStoryObject(this.state.currentCenter);
-        store.addStoryObject(this.state.currentUp);
-        store.addStoryObject(this.state.currentLeft);
-        store.addStoryObject(this.state.currentDown);
-        store.addStoryObject(this.state.currentDown);
-
-        console.log("store >>>>>>>>>>>>", store.list);
-
-        this.setState(
-          {
-            currentCenter: { ...store.list[this.state.chosen] },
-            currentUp: { ...store.list[this.state.chosen + 1] },
-            currentLeft: { ...store.list[this.state.chosen + 2] },
-            currentDown: { ...store.list[this.state.chosen + 3] },
-            currentRight: { ...store.list[this.state.chosen + 4] },
-          },
-          () => {
-            this.setState({ stateStore: [...store.list] });
-          }
-        );
-      }
-    );
+    this.setState({ stateStore: [...store.list] });
   };
 
   makeCenter = () => {
@@ -102,58 +77,54 @@ class App extends React.Component<IAppProps, IAppState> {
     console.log("chosenStory >>>>>>>>>", chosenStory);
 
     if (chosenStory.story.up !== null) {
-      first = { ...store.list[chosenStory.story.up] } as Story;
+      first = store.list[chosenStory.story.up] as Story;
+      console.log("up defined", first);
     } else {
       first.story.down = this.state.chosen;
-      store.addStoryObject(first);
-      const addedIndex = store.getStoryIndex(first);
+      store.addStoryObject(first.story);
       chosenStory.story.up = store.list.length - 1;
-      console.log("length on third", store.list.length - 1);
+      console.log("up NOT defined", first);
     }
 
     if (chosenStory.story.left !== null) {
-      second = { ...store.list[chosenStory.story.left] } as Story;
+      second = store.list[chosenStory.story.left] as Story;
+      console.log("left defined", second);
     } else {
       second.story.right = this.state.chosen;
-      store.addStoryObject(second);
-      const addedIndex = store.getStoryIndex(second);
+      store.addStoryObject(second.story);
       chosenStory.story.left = store.list.length - 1;
-      console.log("length on third", store.list.length - 1);
+      console.log("left NOT defined", second);
     }
 
     if (chosenStory.story.down !== null) {
-      console.log("thrd down existed", third);
-      third = { ...store.list[chosenStory.story.down] } as Story;
-      console.log("third saved", third);
+      third = store.list[chosenStory.story.down] as Story;
+      console.log("down defined", third);
     } else {
-      console.log(" No third down", third);
       third.story.up = this.state.chosen;
-      store.addStoryObject(third);
-      console.log("third saved to the store", third);
-      const addedIndex = store.getStoryIndex(third);
+      store.addStoryObject(third.story);
       chosenStory.story.down = store.list.length - 1;
-      console.log("length on third", store.list.length - 1);
+      console.log("down NOT defined", third);
     }
 
     if (chosenStory.story.right !== null) {
-      fourth = { ...store.list[chosenStory.story.right] } as Story;
+      fourth = store.list[chosenStory.story.right] as Story;
+      console.log("right defined", fourth);
     } else {
       fourth.story.left = this.state.chosen;
-      store.addStoryObject(fourth);
-      const addedIndex = store.getStoryIndex(fourth);
+      store.addStoryObject(fourth.story);
       chosenStory.story.right = store.list.length - 1;
-      console.log("length on third", store.list.length - 1);
+      console.log("right defined", fourth);
     }
 
     console.log("finaly center >>>>>>>>>", chosenStory);
 
     this.setState(
       {
-        currentCenter: { ...chosenStory },
-        currentUp: { ...first },
-        currentLeft: { ...second },
-        currentDown: { ...third },
-        currentRight: { ...fourth },
+        currentCenter: { ...chosenStory.story },
+        currentUp: { ...first.story },
+        currentLeft: { ...second.story },
+        currentDown: { ...third.story },
+        currentRight: { ...fourth.story },
       },
       () => {
         this.setState({ stateStore: [...store.list] }, () => {
@@ -173,22 +144,15 @@ class App extends React.Component<IAppProps, IAppState> {
   updateStory = (index, key) => {
     const story = store.list[index];
     story.setText(this.state[key].text);
-    delete this.state[key].text;
+    // delete this.state[key].text;
     this.setState({ stateStore: [...store.list] }, () => {
       console.log("saving to store >>>> ", store.list);
     });
   };
 
   changeStoryTextonState = (stateKey: IstateKey, value) => {
-    const statValue = this.state[stateKey];
-    console.log(statValue);
-
     this.setState(({
       [stateKey]: {
-        // up: statValue.up,
-        // left: statValue.left,
-        // down: statValue.down,
-        // right: statValue.right,
         ...this.state[stateKey],
         text: value,
       },
@@ -197,13 +161,25 @@ class App extends React.Component<IAppProps, IAppState> {
 
   render() {
     return (
-      <div style={{ maxWidth: "100vw" }}>
+      <div style={{ maxWidth: "100%" }}>
         <h1 className="text-center p-3 m-1">
           Multi path String challenge By Ahmad Ali{" "}
         </h1>
         <h3 className="m-2 p-2 text-center"> choosen : {this.state.chosen} </h3>
+        <h3 className="m-2 p-2 text-center">
+          {" "}
+          <button
+            onClick={() => {
+              this.setState({ chosen: 0 }, () => {
+                this.makeCenter();
+              });
+            }}
+          >
+            Back to Start
+          </button>{" "}
+        </h3>
         <div style={{ display: "block" }} className="m-2 p-2">
-          <p style={{ position: "relative", left: "40%" }} className="m-5 p-5">
+          <p style={{ position: "relative", left: "30%" }} className="m-5 p-5">
             <label>up</label>
             <input
               value={this.state.currentUp.text}
@@ -214,23 +190,27 @@ class App extends React.Component<IAppProps, IAppState> {
             <button
               id={"save" + (this.state.chosen + 1).toString()}
               onClick={(e) => {
-                this.updateStory(this.state.chosen + 1, "currentUp");
+                this.updateStory(this.state.currentCenter.up, "currentUp");
               }}
             >
               save
             </button>
-            <button
-              id={"center" + (this.state.chosen + 1).toString()}
-              onClick={(e) => {
-                console.log("making center >>>>>>", this.state.currentUp.text);
-                this.setState({ chosen: this.state.chosen + 1 }, () => {
-                  this.makeCenter();
-                });
-              }}
-            >
-              make center
-            </button>
-            )
+            {this.state.currentUp.text !== "" && (
+              <button
+                id={"center" + (this.state.chosen + 1).toString()}
+                onClick={(e) => {
+                  console.log(
+                    "making center >>>>>>",
+                    this.state.currentUp.text
+                  );
+                  this.setState({ chosen: this.state.currentCenter.up }, () => {
+                    this.makeCenter();
+                  });
+                }}
+              >
+                make center
+              </button>
+            )}
           </p>
 
           <p className="m-5 p-5">
@@ -246,7 +226,11 @@ class App extends React.Component<IAppProps, IAppState> {
               <button
                 id={"save" + (this.state.chosen + 2).toString()}
                 onClick={(e) => {
-                  this.updateStory(this.state.chosen + 2, "currentLeft");
+                  this.updateStory(
+                    this.state.currentCenter.left,
+
+                    "currentLeft"
+                  );
                 }}
               >
                 save
@@ -254,9 +238,13 @@ class App extends React.Component<IAppProps, IAppState> {
               <button
                 id={"center" + (this.state.chosen + 2).toString()}
                 onClick={(e) => {
-                  this.setState({ chosen: this.state.chosen + 2 }, () => {
-                    this.makeCenter();
-                  });
+                  this.setState(
+                    { chosen: this.state.currentCenter.left },
+
+                    () => {
+                      this.makeCenter();
+                    }
+                  );
                 }}
               >
                 make center
@@ -290,7 +278,7 @@ class App extends React.Component<IAppProps, IAppState> {
             <div
               style={{
                 position: "relative",
-                left: "40%",
+                left: "30%",
                 display: "inline",
               }}
             >
@@ -305,7 +293,11 @@ class App extends React.Component<IAppProps, IAppState> {
               <button
                 id={"save" + (this.state.chosen + 4).toString()}
                 onClick={(e) => {
-                  this.updateStory(this.state.chosen + 4, "currentRight");
+                  this.updateStory(
+                    this.state.currentCenter.right,
+
+                    "currentRight"
+                  );
                 }}
               >
                 save
@@ -313,16 +305,20 @@ class App extends React.Component<IAppProps, IAppState> {
               <button
                 id={"center" + (this.state.chosen + 4).toString()}
                 onClick={(e) => {
-                  this.setState({ chosen: this.state.chosen + 4 }, () => {
-                    this.makeCenter();
-                  });
+                  this.setState(
+                    { chosen: this.state.currentCenter.right },
+
+                    () => {
+                      this.makeCenter();
+                    }
+                  );
                 }}
               >
                 make center
               </button>
             </div>
           </p>
-          <p style={{ position: "relative", left: "40%" }} className="m-5 p-5">
+          <p style={{ position: "relative", left: "30%" }} className="m-5 p-5">
             <label> down</label>
             <input
               id={"input" + (this.state.chosen + 3).toString()}
@@ -334,7 +330,7 @@ class App extends React.Component<IAppProps, IAppState> {
             <button
               id={"save" + (this.state.chosen + 3).toString()}
               onClick={(e) => {
-                this.updateStory(this.state.chosen + 3, "currentDown");
+                this.updateStory(this.state.currentCenter.down, "currentDown");
               }}
             >
               save
@@ -343,7 +339,7 @@ class App extends React.Component<IAppProps, IAppState> {
             <button
               id={"center" + (this.state.chosen + 3).toString()}
               onClick={(e) => {
-                this.setState({ chosen: this.state.chosen + 3 }, () => {
+                this.setState({ chosen: this.state.currentCenter.down }, () => {
                   this.makeCenter();
                 });
               }}
@@ -352,21 +348,33 @@ class App extends React.Component<IAppProps, IAppState> {
             </button>
           </p>
         </div>
-        <pre className="text-center">
-          {/* {JSON.stringify(this.state.stateStore, null, 2)} */}
+        <br />
+        {/* <pre className="text-center">
+          center{JSON.stringify(this.state.currentCenter)}
         </pre>
-        <br />{" "}
-        <p>
+        <br />
+        <pre className="text-center">
+          up{JSON.stringify(this.state.currentUp)}
+        </pre>
+        <br />
+        <pre className="text-center">
+          left{JSON.stringify(this.state.currentLeft)}
+        </pre>
+        <br />
+        <pre className="text-center">
+          down{JSON.stringify(this.state.currentDown)}
+        </pre>
+        <br />
+        <pre className="text-center">
+          right{JSON.stringify(this.state.currentRight)}
+        </pre>
+        <p className="text-center">
           ___________________________________________________________________________-
         </p>
-        <br />
-        <pre>center{JSON.stringify(this.state.currentCenter)}</pre>
-        <br />
-        <pre>up{JSON.stringify(this.state.currentUp)}</pre>
-        <br />
-        <pre>down{JSON.stringify(this.state.currentDown)}</pre>
-        <br />
-        <pre>right{JSON.stringify(this.state.currentRight)}</pre>
+        <pre className="text-center">
+          {JSON.stringify(this.state.stateStore, null, 2)}
+        </pre>
+        <br />{" "} */}
       </div>
     );
   }
