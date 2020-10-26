@@ -2,6 +2,7 @@ import * as React from "react";
 
 import { Story } from "../server/controllers/stories/story.model";
 import MultiString from "../server/controllers/stories/multiString.model";
+import { Istory } from "../server/controllers/stories/stories.types";
 
 const store = new MultiString();
 
@@ -74,49 +75,37 @@ class App extends React.Component<IAppProps, IAppState> {
 
     const chosenStory = store.list[this.state.chosen];
 
-    console.log("chosenStory >>>>>>>>>", chosenStory);
-
     if (chosenStory.story.up !== null) {
       first = store.list[chosenStory.story.up] as Story;
-      console.log("up defined", first);
     } else {
       first.story.down = this.state.chosen;
       store.addStoryObject(first.story);
       chosenStory.story.up = store.list.length - 1;
-      console.log("up NOT defined", first);
     }
 
     if (chosenStory.story.left !== null) {
       second = store.list[chosenStory.story.left] as Story;
-      console.log("left defined", second);
     } else {
       second.story.right = this.state.chosen;
       store.addStoryObject(second.story);
       chosenStory.story.left = store.list.length - 1;
-      console.log("left NOT defined", second);
     }
 
     if (chosenStory.story.down !== null) {
       third = store.list[chosenStory.story.down] as Story;
-      console.log("down defined", third);
     } else {
       third.story.up = this.state.chosen;
       store.addStoryObject(third.story);
       chosenStory.story.down = store.list.length - 1;
-      console.log("down NOT defined", third);
     }
 
     if (chosenStory.story.right !== null) {
       fourth = store.list[chosenStory.story.right] as Story;
-      console.log("right defined", fourth);
     } else {
       fourth.story.left = this.state.chosen;
       store.addStoryObject(fourth.story);
       chosenStory.story.right = store.list.length - 1;
-      console.log("right defined", fourth);
     }
-
-    console.log("finaly center >>>>>>>>>", chosenStory);
 
     this.setState(
       {
@@ -127,10 +116,7 @@ class App extends React.Component<IAppProps, IAppState> {
         currentRight: { ...fourth.story },
       },
       () => {
-        this.setState({ stateStore: [...store.list] }, () => {
-          console.log("centered store >>>>>>>>>>>>", store.list);
-          console.log("centered state >>>>>>>>>>>", this.state);
-        });
+        this.setState({ stateStore: [...store.list] });
       }
     );
   };
@@ -145,9 +131,7 @@ class App extends React.Component<IAppProps, IAppState> {
     const story = store.list[index];
     story.setText(this.state[key].text);
     // delete this.state[key].text;
-    this.setState({ stateStore: [...store.list] }, () => {
-      console.log("saving to store >>>> ", store.list);
-    });
+    this.setState({ stateStore: [...store.list] });
   };
 
   changeStoryTextonState = (stateKey: IstateKey, value) => {
@@ -199,10 +183,6 @@ class App extends React.Component<IAppProps, IAppState> {
               <button
                 id={"center" + (this.state.chosen + 1).toString()}
                 onClick={(e) => {
-                  console.log(
-                    "making center >>>>>>",
-                    this.state.currentUp.text
-                  );
                   this.setState({ chosen: this.state.currentCenter.up }, () => {
                     this.makeCenter();
                   });
@@ -349,32 +329,6 @@ class App extends React.Component<IAppProps, IAppState> {
           </p>
         </div>
         <br />
-        {/* <pre className="text-center">
-          center{JSON.stringify(this.state.currentCenter)}
-        </pre>
-        <br />
-        <pre className="text-center">
-          up{JSON.stringify(this.state.currentUp)}
-        </pre>
-        <br />
-        <pre className="text-center">
-          left{JSON.stringify(this.state.currentLeft)}
-        </pre>
-        <br />
-        <pre className="text-center">
-          down{JSON.stringify(this.state.currentDown)}
-        </pre>
-        <br />
-        <pre className="text-center">
-          right{JSON.stringify(this.state.currentRight)}
-        </pre>
-        <p className="text-center">
-          ___________________________________________________________________________-
-        </p>
-        <pre className="text-center">
-          {JSON.stringify(this.state.stateStore, null, 2)}
-        </pre>
-        <br />{" "} */}
       </div>
     );
   }
@@ -383,11 +337,11 @@ class App extends React.Component<IAppProps, IAppState> {
 export interface IAppProps {}
 
 export interface IAppState {
-  currentCenter: any;
-  currentLeft: any;
-  currentRight: any;
-  currentUp: any;
-  currentDown: any;
+  currentCenter: Istory;
+  currentLeft: Istory;
+  currentRight: Istory;
+  currentUp: Istory;
+  currentDown: Istory;
   chosen: number;
   stateStore: Story[];
 }
