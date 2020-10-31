@@ -8,6 +8,12 @@
 
 ## Project existed live on <https://multi-path-strings.herokuapp.com/>
 
+## Data Structure
+
+1. linked list, with four pointers.
+2. story class contains the indexes of the 4 dierctions and the text content of the story.
+3. store of stories, contains list of stories with the functions that required to work with.
+
 ## Notes
 
 1. Typescript full stack.
